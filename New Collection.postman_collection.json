@@ -1,0 +1,546 @@
+{
+	"info": {
+		"_postman_id": "48cac25e-bc3c-4e05-9dee-4939310e7c6c",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34702386",
+		"_collection_link": "https://rebu-server.postman.co/workspace/Rebu-server-Workspace~49cb9606-bf81-48f9-8cf4-efc7e7ca1a6b/collection/34702386-48cac25e-bc3c-4e05-9dee-4939310e7c6c?action=share&source=collection_link&creator=34702386"
+	},
+	"item": [
+		{
+			"name": "userAuth",
+			"item": [
+				{
+					"name": "loginRegister",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    // \"name\":\"Rohit\",\r\n    // \"email\":\"rohit@zohomail.in\",\r\n    \"phone\":9006175347\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/registerLoginUser",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"registerLoginUser"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "verifyOtp",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"phone\":7070186106,\r\n    \"otp\":1234,\r\n    \"fcmToken\":\"nbngjrngongonergnrmglkkermg,lhmltghngngnngbmlkbjgbbrborgorttguotngugmrmopkvpimobbnruononbonnounonguorngrngrngonuorthnburt\",\r\n    \"deviceId\":\"HBUTEduvfbfuvfygvfjgm\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/verifyOtp",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"verifyOtp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getUserById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/getUserById/68ede76373150445339f89e0",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"getUserById",
+								"68ede76373150445339f89e0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateProfile",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-09-15 185746.png",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Rohit",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "rohit@gmail.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "disable",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/updateUserProfile/68ede76373150445339f89e0",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"updateUserProfile",
+								"68ede76373150445339f89e0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAllUsers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/AllUsers?page=1&limit=10",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"AllUsers"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "r",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "googleLogin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"idToken\" : \"nkjmf;l,wflknkwbfwefnwekfeffegfuywegfuiewfofuibfofnuobuibuifibfyiegfbgbfuywefuyef\",\r\n    \"fcmToken\": \"fhefihwefyfgweidgeigygywegfigffkewjfhfeifjweifeifhiwefhwefihuiwehfehfuiwehfuiehfuiwegiegfiwe\",\r\n    \"deviceId\": \"ohfuibfhhfguvgvewgve\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/googleLogin",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"googleLogin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "isUserExist",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/isUserExist?phone=7070186106",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"isUserExist"
+							],
+							"query": [
+								{
+									"key": "phone",
+									"value": "7070186106"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VyIjoiNjRkZGFmZGI3ZjIxYjJjODg3OGUwMDAxIiwiaWF0IjoxNzYxNjQyMDU5LCJleHAiOjE3NjQyMzQwNTl9.55UwPU6ngQwqroh73ONw3cdt5ZrsDivnKP5LOOwnlag",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "driver Copy",
+			"item": [
+				{
+					"name": "registerLoginDriver",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "rcImage",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot (1137).png"
+								},
+								{
+									"key": "dlImage",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot (1137).png"
+								},
+								{
+									"key": "aadharFront",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot (1137).png"
+								},
+								{
+									"key": "aadharBack",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot (1137).png"
+								},
+								{
+									"key": "panImage",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot (1137).png"
+								},
+								{
+									"key": "name",
+									"value": "saurav",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "saurav123@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "aadharNumber",
+									"value": "964256571445",
+									"type": "text"
+								},
+								{
+									"key": "panNumber",
+									"value": "DFYPG2376C",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "7070186107",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot (1137).png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/driver/register",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"driver",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "verifyOTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"phone\":\"7070186106\",\r\n    \"otp\":\"5465\",\r\n    \"fcmToken\":\"jhgoernggoojrngojerngorengojrengojerngojrngnergjnrgregnregojerngre\",\r\n    \"deviceId\":\"sybccifrfiug931pj\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/driver/verifyOtp",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"driver",
+								"verifyOtp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getDriverById",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/drivers/68e936e164845908fb00a20b",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"drivers",
+								"68e936e164845908fb00a20b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "updateDriver",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Rohit",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "lkvmflnv@gmail.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "aadharNumber",
+									"value": "964256571273",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "panNumber",
+									"value": "DFYPG2375C",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "rcImage",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-10-10 165506.png",
+									"disabled": true
+								},
+								{
+									"key": "dlImage",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-10-06 171508.png",
+									"disabled": true
+								},
+								{
+									"key": "aadharFront",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-10-10 165506.png",
+									"disabled": true
+								},
+								{
+									"key": "aadharBack",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-10-10 165506.png",
+									"disabled": true
+								},
+								{
+									"key": "panImage",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-10-10 165506.png",
+									"disabled": true
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/rohit/OneDrive/Pictures/Screenshots/Screenshot 2025-10-10 165506.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{server}}/drivers/update/68e936e164845908fb00a20b",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"drivers",
+								"update",
+								"68e936e164845908fb00a20b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getAllDrivers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/drivers?search=ro",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"drivers"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "ro",
+									"description": "search with name, phone and email"
+								},
+								{
+									"key": "status",
+									"value": "verified",
+									"description": "'pending', 'verified'",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "tongleDuty",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/drivers/toggle-duty/68e275b66d8eba1d20fc28e5",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"drivers",
+								"toggle-duty",
+								"68e275b66d8eba1d20fc28e5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "server",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
