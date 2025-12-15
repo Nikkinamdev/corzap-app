@@ -11,6 +11,9 @@ import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:http/http.dart' as http;
 
+import '../controller/location_controller.dart';
+import '../controller/socket_controller.dart';
+
 class DashBoardApis extends GetxController {
   RxBool loading = false.obs;
 
@@ -27,6 +30,7 @@ class DashBoardApis extends GetxController {
   RxBool checkvehicle = false.obs;
   RxString vehiclemessage = "".obs;
   RxString vehicleId = ''.obs;
+  RxBool backendStatus=false.obs;
 
   Future<void> DriverProfile(String id) async {
     try {
@@ -78,67 +82,79 @@ class DashBoardApis extends GetxController {
   Future<void> editProfile({
     required String id,
     required String name,
-    required File? rcImage, // this should be a file path
+    required String vehicleId,
+    required File? rcImage,
   }) async {
     try {
       loading.value = true;
+
+      final token = await SessionManager.getToken().toString();
+
+
       print("📡 Updating driver profile for ID: $id");
 
-      // 🔑 Get saved token
-      final token = await SessionManager.getToken();
-      print("🔑 Retrieved token: $token");
+      final uri = Uri.parse(
+        "${Urls.baseUrl}/driver/update?userId=693fb041a48c698dd84fe50a&userType=Driver",
+      ).replace(queryParameters: {
+        "userId": id,
+        "userType": "Driver",
+      });
 
-      // ✅ Use MultipartRequest for file upload
-      var request = http.MultipartRequest(
-        'PUT', // or 'POST' depending on your API
-        Uri.parse("${Urls.baseUrl}/driver/update/userId=$id&userType=Driver")
-      );
+      final request = http.MultipartRequest("PUT", uri);
 
-      // Add headers
-      request.headers.addAll({"Authorization": "Bearer $token"});
+      // headers
+      request.headers.addAll({
+        "Authorization": "Bearer $token",
+      });
 
-      // Add text fields
-      request.fields['name'] = name;
+      // ✅ FORM DATA FIELDS
+      request.fields.addAll({
+        "name": name,
+        "vehicleId": "691ef701fc1172f362076062",
+      });
 
-      // Add file field (must match multer field name)
+      // ✅ FILE FIELD (optional)
       if (rcImage != null) {
-        print("📷 Uploading RC Image: ${rcImage.path}");
-
         request.files.add(
-          await http.MultipartFile.fromPath("rcImage", rcImage.path),
+          await http.MultipartFile.fromPath(
+            "image", // must match backend multer key
+            rcImage.path,
+          ),
         );
       }
 
-      // Send request
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
+      final response = await request.send();
+      final body = await response.stream.bytesToString();
 
       print("🔹 Status Code: ${response.statusCode}");
-      print("🔹 Response: $responseBody");
+      print("🔹 Response: $body");
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(responseBody);
+        final jsonData = jsonDecode(body);
+
         if (jsonData['success'] == true) {
           final driver = jsonData['driver'];
+
           updateSuccess.value = true;
           driverName.value = driver['name'] ?? '';
           driverEmail.value = driver['email'] ?? '';
           driverPhone.value = driver['phone'] ?? '';
+
           driverImage.value =
-              "https://leadkart.in-maa-1.linodeobjects.com/${driver['RcImage']}";
-          print("✅ Profile updated successfully${driverImage.value}");
-        } else {
-          print("⚠️ Unexpected response: $jsonData");
+          "https://leadkart.in-maa-1.linodeobjects.com/${driver['image']}";
+
+          print("✅ Profile updated successfully");
         }
       } else {
-        print("❌ API Error - Status Code: ${response.statusCode}");
+        print("❌ API Error ${response.statusCode}");
       }
     } catch (e) {
-      print("🚨 Exception in editProfile(): $e");
+      print("🚨 editProfile Exception: $e");
     } finally {
       loading.value = false;
     }
   }
+
 
   // Future<void> toggleDriverStatus({required String id}) async {
   //   print("sesion driveridddddddd${SessionManager.getDriverId().toString()}");
@@ -183,9 +199,7 @@ class DashBoardApis extends GetxController {
       final token = await SessionManager.getToken();
 
       final response = await http.patch(
-        Uri.parse(
-          "https://corezap.framekarts.com/api/v1/driver/toggleDuty/$id",
-        ),
+        Uri.parse("https://corezap.framekarts.com/api/v1/driver/toggleDuty/$id"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -196,27 +210,36 @@ class DashBoardApis extends GetxController {
       final jsonData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && jsonData["success"] == true) {
-        // YE LINE HATA DO YA COMMENT KAR DO
-        driverStatus.value = jsonData["driver"]["startDuty"];
+         backendStatus.value= jsonData["driver"]["startDuty"]; // true/false
 
-        // Ab status sirf user action se control hoga, backend se nahi
-        print("Status toggled on backend. UI controlled locally.");
+        print("Backend Duty Status: $backendStatus");
 
-        // Optional: SnackBar dikhao
-        // Get.snackbar(
-        //   "Status Updated",
-        //   jsonData["driver"]["startDuty"] == true ? "You are now Online" : "You are now Offline",
-        //   snackPosition: SnackPosition.BOTTOM,
-        //   backgroundColor: Colors.black87,
-        //   colorText: Colors.white,
-        //   duration: Duration(seconds: 2),
-        // );
+        // -----------------------------------------------------
+        // DO NOT update UI here. UI already updated onTap.
+        // -----------------------------------------------------
+
+        final socketCtrl = Get.find<SocketController>();
+        final locationCtrl = Get.find<LocationController>();
+
+        if (backendStatus == true) {
+          // Backend says driver must be ONLINE
+          socketCtrl.goOnline();
+          await locationCtrl.startLocationStream();
+
+          print("✓ Synced with backend → Driver ONLINE");
+        } else {
+          // Backend says driver must be OFFLINE
+          socketCtrl.goOffline();
+          locationCtrl.stopLocationStream();
+
+          print("✓ Synced with backend → Driver OFFLINE");
+        }
       }
     } catch (e) {
-      print("Error in toggleDriverStatus: $e");
-      // API fail bhi ho to UI change mat karo
+      print("❌ Error in toggleDriverStatus: $e");
     }
   }
+
 
   Future<void> createVehicle({
     required String vehicleColor,

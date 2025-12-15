@@ -138,7 +138,15 @@ class CustomBottomSheets {
                       context: context,
                       text: "Cancel Ride",
                       onClicked: () {
-                        PopUps().cancelRidePopup(context);
+                        final selectedIndex = cancelRideController.cancelRideReasonIndex.value;
+                        final selectedReason = cancelReasonList[selectedIndex];
+
+                        PopUps().cancelRidePopup(
+                          context,
+                          selectedIndex,     // pass index
+                          selectedReason,    // pass actual reason text
+                        );
+                       // PopUps().cancelRidePopup(context,);
                       },
                       isFullWidth: true,
                       backgroundColor:

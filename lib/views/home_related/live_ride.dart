@@ -1,3 +1,4 @@
+import 'package:corezap_driver/apis/ride_apis.dart';
 import 'package:corezap_driver/controller/controllers.dart';
 import 'package:corezap_driver/controller/ride_data_controller.dart';
 import 'package:corezap_driver/controller/stepper_controller.dart';
@@ -8,6 +9,7 @@ import 'package:corezap_driver/utilities/colors/colors_list.dart';
 import 'package:corezap_driver/utilities/custom_appbar.dart';
 import 'package:corezap_driver/utilities/custom_font.dart';
 import 'package:corezap_driver/utilities/custom_images.dart';
+import 'package:corezap_driver/utilities/custom_text.dart';
 import 'package:corezap_driver/utilities/navigator.dart';
 import 'package:corezap_driver/views/home_related/circular_timer.dart';
 import 'package:corezap_driver/views/scheduled_pickups/accepted_screen.dart';
@@ -19,6 +21,8 @@ import 'package:get/get.dart';
 import 'package:get/instance_manager.dart';
 import 'package:get/route_manager.dart';
 import 'package:intl/intl.dart';
+
+import '../../apis/driver_detail_apis.dart';
 
 class LiveRide extends StatefulWidget {
   const LiveRide({super.key});
@@ -33,6 +37,8 @@ class _LiveRideState extends State<LiveRide> {
 
   StepperController stepperController = Get.find<StepperController>();
   Controllers cancelRideController = Get.find<Controllers>();
+  RideApisController rideAccept = Get.put(RideApisController());
+  DashBoardApis vehicleid = Get.find<DashBoardApis>();
   // pickup drop time
   // List detailsAbout = ["Pick up", "Drop", "Time"];
   // List details = ["11Km", "4 km", "10 min"];
@@ -353,6 +359,7 @@ class _LiveRideState extends State<LiveRide> {
                         text: "Cancel",
                         onClicked: () {
                           CustomBottomSheets().cancelRide(context);
+
                           // CustomNavigator.push(
                           //   context,
                           //   LiveRide(),
@@ -371,15 +378,36 @@ class _LiveRideState extends State<LiveRide> {
                         width: w * .43,
                         context: context,
                         text: "Accept",
-                        onClicked: () {
+                        onClicked: () async {
                           stepperController.resetSteps();
                           // stepperController.activeStep.value = 1;
-                          CustomNavigator.push(
-                            context,
-
-                            ArrivingClient(),
-                            transition: TransitionType.slideLeft,
+                          await rideAccept.AcceptRide(
+                            vehicleId: vehicleid.vehicleId.value,
+                            orderStatus: "Accepted", orderId: rideCtrl.rideId.value,
                           );
+                          if (rideAccept.RideAcceptStatus.value == true) {
+                            CustomNavigator.push(
+                              context,
+
+                              ArrivingClient(),
+                              transition: TransitionType.slideLeft,
+                            );
+                          } else {
+                            CustomNavigator.push(
+                              context,
+
+                              ArrivingClient(),
+                              transition: TransitionType.slideLeft,
+                            );
+print("rodeeeeee${rideAccept.RideAcceptMessage.value}");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(backgroundColor: AppColors.primaryRed,
+                                content: CustomText(
+                                  text: rideAccept.RideAcceptMessage.value,textColor: Colors.white,
+                                ),
+                              ),
+                            );
+                          }
                         },
                         isFullWidth: false,
                         backgroundColor: ColorsList.mainButtonColor,

@@ -331,7 +331,7 @@ class _EditProfileState extends State<EditProfile> {
                       await editprofileController.editProfile(
                         id: SessionManager.getDriverId().toString(),
                         name: fullNameController.text,
-                        rcImage: File(_profileImage!.path)
+                        rcImage: File(_profileImage!.path), vehicleId: ''
                       );
 
                       // 👇 After API call completes

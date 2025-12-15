@@ -1,22 +1,36 @@
 import 'package:corezap_driver/apis/driver_detail_apis.dart';
 import 'package:corezap_driver/controller/document_upload_controller.dart';
 import 'package:corezap_driver/controller/login.controller.dart';
-import 'package:corezap_driver/controller/ride_data_controller.dart';
+
 import 'package:corezap_driver/session/session_manager.dart';
 import 'package:corezap_driver/utilities/colors.dart';
 import 'package:corezap_driver/views/onboarding/onboarding_screen.dart';
 import 'package:corezap_driver/views/splash/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 import 'apis/auth.dart';
+import 'controller/location_controller.dart';
+import 'controller/notification_controller.dart';
 import 'controller/socket_controller.dart';
-
+import 'firebase_option.dart';
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("🔔 Background FCM: ${message.notification?.title}");
+}
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+//  Get.put(NotificationController());
   Get.put(DocumentUploadController()); // 🔥 fix
   Get.put(LoginController());
   Get.put(DashBoardApis());
@@ -25,9 +39,10 @@ Future<void> main() async {
   // WidgetsFlutterBinding.ensureInitialized();
   await SessionManager.initSession();
   final isLoggedIn = await SessionManager.isLoggedIn();
-  Get.put(SocketController());
+  Get.put(SocketController(), permanent: true);
+  final location=Get.put(LocationController(), permanent: true);
   // Get.put(RideDataController());
-
+  await location.startLocationStream();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

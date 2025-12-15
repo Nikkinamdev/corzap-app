@@ -46,22 +46,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     super.initState();
     _loadData();
-    // Listen for new ride
-    // ever(socketController.newRideData, (rideData) {
-    //   if (rideData != null) {
-    //     print("live ride screen open");
-    //     // Schedule navigation after first frame
-    //     WidgetsBinding.instance.addPostFrameCallback((_) {
-    //       CustomNavigator.push(
-    //         context,
-    //         LiveRide(),
-    //         transition: TransitionType.fade,
-    //       );
-    //       //  socketController.newRideData.value = null; // reset
-    //     });
-    //   }
-    // });
-    //newww
+     driverprofileController.toggleDriverStatus(
+      id: SessionManager.getDriverId().toString(),
+    );
+
     ever(rideController.rideData, (data) {
       if (data.isNotEmpty) {
         print("live ride screen open");
@@ -76,21 +64,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Future<void> _loadData() async {
-  //   String driverId = SessionManager.getDriverId().toString();
 
-  //   await driverprofileController.DriverProfile(driverId);
-  //   // await driverstatusController.toggleDriverStatus(id: driverId);
-  // }
-  //newwwwwwwww
   Future<void> _loadData() async {
     String driverId = SessionManager.getDriverId().toString();
 
     await driverprofileController.DriverProfile(driverId);
 
-    // Profile load hone ke baad, UI status ko backend se sync kar do (sirf first time)
-    // Baad mein user action se control hoga
-    // (Agar backend pe already online hai to green dikhega)
+
   }
 
   @override
@@ -160,231 +140,114 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // Right Section - Toggle button (as you already have)
-                  // Obx(
-                  //   () => InkWell(
-                  //     onTap: () async {
-                  //       // Toggle the status value
-                  //       driverprofileController.driverStatus.value =
-                  //           !driverprofileController.driverStatus.value;
-
-                  //       // Call API
-                  //       print(
-                  //         "sesion driveridddddddd${SessionManager.getDriverId().toString()}",
-                  //       );
-                  //       await driverprofileController.toggleDriverStatus(
-                  //         id: SessionManager.getDriverId().toString(),
-                  //       );
-                  //     },
-                  //     borderRadius: BorderRadius.circular(w * 0.06),
-                  //     child: AnimatedContainer(
-                  //       duration: const Duration(milliseconds: 250),
-                  //       curve: Curves.easeInOut,
-                  //       width: w * 0.26,
-                  //       height: w * 0.10,
-                  //       padding: EdgeInsets.symmetric(horizontal: w * 0.015),
-                  //       decoration: BoxDecoration(
-                  //         color: driverprofileController.driverStatus.value
-                  //             ? AppColors.green.withOpacity(
-                  //                 0.1,
-                  //               ) // true → Online (green)
-                  //             : AppColors.primaryRed.withOpacity(0.1),
-                  //         // false → Offline (red)
-                  //         borderRadius: BorderRadius.circular(w * 0.06),
-                  //         border: Border.all(
-                  //           color: driverprofileController.driverStatus.value
-                  //               ? AppColors.green
-                  //               : AppColors.primaryRed,
-                  //           width: 1.2,
-                  //         ),
-                  //       ),
-                  //       child: Stack(
-                  //         alignment: Alignment.center,
-                  //         children: [
-                  //           Align(
-                  //             alignment:
-                  //                 driverprofileController.driverStatus.value
-                  //                 ? Alignment
-                  //                       .centerLeft // true → Online
-                  //                 : Alignment.centerRight,
-                  //             // false → Offline
-                  //             child: Padding(
-                  //               padding: EdgeInsets.symmetric(
-                  //                 horizontal: w * 0.025,
-                  //               ),
-                  //               child: AppFonts.textPoppins(
-                  //                 context,
-                  //                 driverprofileController.driverStatus.value
-                  //                     ? "Online"
-                  //                     : "Offline",
-                  //                 w * 0.032,
-                  //                 FontWeight.w500,
-                  //                 driverprofileController.driverStatus.value
-                  //                     ? AppColors.green
-                  //                     : AppColors.primaryRed,
-                  //                 TextAlign.center,
-                  //                 TextOverflow.visible,
-                  //               ),
-                  //             ),
-                  //           ),
-                  //           AnimatedAlign(
-                  //             duration: const Duration(milliseconds: 250),
-                  //             alignment:
-                  //                 driverprofileController.driverStatus.value
-                  //                 ? Alignment
-                  //                       .centerRight // true → Online (circle right)
-                  //                 : Alignment.centerLeft,
-                  //             // false → Offline (circle left)
-                  //             child: Container(
-                  //               width: w * 0.06,
-                  //               height: w * 0.06,
-                  //               decoration: BoxDecoration(
-                  //                 color:
-                  //                     driverprofileController.driverStatus.value
-                  //                     ? AppColors.green
-                  //                     : AppColors.primaryRed,
-                  //                 shape: BoxShape.circle,
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  //new
-                  // Right Section - Toggle button (UPDATED WITH SOCKET LOGIC)
                   Obx(
-                    () => InkWell(
-                      // onTap: () async {
-                      //   // 🔥 FIRST: Get the Socket Controller
-                      //   final socketCtrl = Get.find<SocketController>();
+                        () {
+                      final isOnline = driverprofileController.driverStatus.value;
 
-                      //   // 🔥 Also the Location Controller
-                      //   final location = Get.find<LocationController>();
+                      return InkWell(
+                        onTap: () async {
+                          final socketCtrl = Get.find<SocketController>();
+                          final locationCtrl = Get.find<LocationController>();
+                          final driverCtrl = driverprofileController;
 
-                      //   // 1. Toggle status
-                      //   bool newStatus =
-                      //       !driverprofileController.driverStatus.value;
+                          // Optimistically toggle driver status
+                          driverCtrl.driverStatus.value = !isOnline;
 
-                      //   // 2. Update UI immediately
-                      //   driverprofileController.driverStatus.value = newStatus;
+                          // Update socket & location immediately for smooth UI
+                          if (driverCtrl.driverStatus.value) {
+                            locationCtrl.startLocationStream();
+                            socketCtrl.goOnline();
+                          } else {
+                            locationCtrl.stopLocationStream();
+                            socketCtrl.goOffline();
+                          }
 
-                      //   // 3. Handle Online / Offline instantly
-                      //   if (newStatus) {
-                      //     print("Driver new status $newStatus");
-                      //     socketCtrl.goOnline();
-                      //     location.startLocationStream();
-                      //     print("Driver now ONLINE");
-                      //   } else {
-                      //     socketCtrl.goOffline();
-                      //     location.stopLocationStream();
-                      //     print("Driver now OFFLINE");
-                      //   }
+                          // Call StartDuty API in background
+                          try {
+                            await driverCtrl.toggleDriverStatus(
+                              id: SessionManager.getDriverId().toString(),
+                            );
 
-                      //   // 4. Call backend API
-                      //   await driverprofileController.toggleDriverStatus(
-                      //     id: SessionManager.getDriverId().toString(),
-                      //   );
-                      // },
-                      //newwwwww
-                      onTap: () async {
-                        final socketCtrl = Get.find<SocketController>();
-                        final locationCtrl = Get.find<LocationController>();
+                            // Sync backend status if needed
+                            if (driverCtrl.backendStatus.value != driverCtrl.driverStatus.value) {
+                              driverCtrl.driverStatus.value = driverCtrl.backendStatus.value;
 
-                        bool newStatus =
-                            !driverprofileController.driverStatus.value;
-                        driverprofileController.driverStatus.value = newStatus;
-
-                        if (newStatus) {
-                          // Pehle location stream start karo
-                          await locationCtrl.startLocationStream();
-
-                          // Phir online karo (location aaye ya na aaye, online ho jaayega)
-                          socketCtrl.goOnline();
-
-                          print("Driver is now ONLINE");
-                        } else {
-                          socketCtrl.goOffline();
-                          locationCtrl.stopLocationStream();
-                          print("Driver is now OFFLINE");
-                        }
-
-                        // API call last mein (UI pehle update ho chuki hai)
-                        await driverprofileController.toggleDriverStatus(
-                          id: SessionManager.getDriverId().toString(),
-                        );
-                      },
-
-                      borderRadius: BorderRadius.circular(w * 0.06),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
-                        width: w * 0.26,
-                        height: w * 0.10,
-                        padding: EdgeInsets.symmetric(horizontal: w * 0.015),
-                        decoration: BoxDecoration(
-                          color: driverprofileController.driverStatus.value
-                              ? AppColors.green.withOpacity(0.1)
-                              : AppColors.primaryRed.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(w * 0.06),
-                          border: Border.all(
-                            color: driverprofileController.driverStatus.value
-                                ? AppColors.green
-                                : AppColors.primaryRed,
-                            width: 1.2,
+                              if (driverCtrl.backendStatus.value) {
+                                locationCtrl.startLocationStream();
+                                socketCtrl.goOnline();
+                              } else {
+                                locationCtrl.stopLocationStream();
+                                socketCtrl.goOffline();
+                              }
+                            }
+                          } catch (e) {
+                            // Revert UI if API fails
+                            driverCtrl.driverStatus.value = isOnline;
+                            if (isOnline) {
+                              locationCtrl.startLocationStream();
+                              socketCtrl.goOnline();
+                            } else {
+                              locationCtrl.stopLocationStream();
+                              socketCtrl.goOffline();
+                            }
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(w * 0.06),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeInOut,
+                          width: w * 0.26,
+                          height: w * 0.10,
+                          padding: EdgeInsets.symmetric(horizontal: w * 0.015),
+                          decoration: BoxDecoration(
+                            color: isOnline
+                                ? AppColors.green.withOpacity(0.1)
+                                : AppColors.primaryRed.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(w * 0.06),
+                            border: Border.all(
+                              color: isOnline ? AppColors.green : AppColors.primaryRed,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Align(
+                                alignment: isOnline ? Alignment.centerLeft : Alignment.centerRight,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: w * 0.025),
+                                  child: AppFonts.textPoppins(
+                                    context,
+                                    isOnline ? "Online" : "Offline",
+                                    w * 0.032,
+                                    FontWeight.w500,
+                                    isOnline ? AppColors.green : AppColors.primaryRed,
+                                    TextAlign.center,
+                                    TextOverflow.visible,
+                                  ),
+                                ),
+                              ),
+                              AnimatedAlign(
+                                duration: const Duration(milliseconds: 250),
+                                alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
+                                child: Container(
+                                  width: w * 0.06,
+                                  height: w * 0.06,
+                                  decoration: BoxDecoration(
+                                    color: isOnline ? AppColors.green : AppColors.primaryRed,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Align(
-                              alignment:
-                                  driverprofileController.driverStatus.value
-                                  ? Alignment.centerLeft
-                                  : Alignment.centerRight,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: w * 0.025,
-                                ),
-                                child: AppFonts.textPoppins(
-                                  context,
-                                  driverprofileController.driverStatus.value
-                                      ? "Online"
-                                      : "Offline",
-                                  w * 0.032,
-                                  FontWeight.w500,
-                                  driverprofileController.driverStatus.value
-                                      ? AppColors.green
-                                      : AppColors.primaryRed,
-                                  TextAlign.center,
-                                  TextOverflow.visible,
-                                ),
-                              ),
-                            ),
-                            AnimatedAlign(
-                              duration: const Duration(milliseconds: 250),
-                              alignment:
-                                  driverprofileController.driverStatus.value
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
-                              child: Container(
-                                width: w * 0.06,
-                                height: w * 0.06,
-                                decoration: BoxDecoration(
-                                  color:
-                                      driverprofileController.driverStatus.value
-                                      ? AppColors.green
-                                      : AppColors.primaryRed,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                      );
+                    },
+                  )
+
+
+
                 ],
               ),
             ),

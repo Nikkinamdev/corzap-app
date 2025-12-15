@@ -2,24 +2,27 @@ import 'package:corezap_driver/utilities/colors/colors_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get_state_manager/src/simple/get_state.dart';
+
+import '../../controller/pincontroller.dart';
 
 class CustomPin extends StatefulWidget {
-  const CustomPin({super.key});
+  final List<TextEditingController> controllers;
+
+  const CustomPin({super.key, required this.controllers});
 
   @override
   State<CustomPin> createState() => _CustomPinState();
 }
 
 class _CustomPinState extends State<CustomPin> {
-  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
-  final List<TextEditingController> _controllers = List.generate(
-    4,
-    (_) => TextEditingController(),
-  );
+  late final List<FocusNode> _focusNodes;
 
   @override
   void initState() {
     super.initState();
+    _focusNodes = List.generate(4, (_) => FocusNode());
+
     for (var node in _focusNodes) {
       node.addListener(() {
         setState(() {});
@@ -31,9 +34,6 @@ class _CustomPinState extends State<CustomPin> {
   void dispose() {
     for (var node in _focusNodes) {
       node.dispose();
-    }
-    for (var controller in _controllers) {
-      controller.dispose();
     }
     super.dispose();
   }
@@ -49,24 +49,12 @@ class _CustomPinState extends State<CustomPin> {
           width: w * .12,
           height: w * .12,
           child: TextFormField(
-            controller: _controllers[index],
+            controller: widget.controllers[index],
             focusNode: _focusNodes[index],
-            textInputAction: index < 3
-                ? TextInputAction.next
-                : TextInputAction.done,
-            onFieldSubmitted: (value) {
-              if (index == 3) {
-                String otp = _controllers.map((c) => c.text).join();
-                if (otp.length == 4) {
-                  //!  CustomNavigation.push(context, CustomBottomNavBar());
-                }
-              }
-            },
-            // onChanged: (value) {
-            //   if (value.length == 1 && index < 3) {
-            //     FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
-            //   }
-            // },
+
+            textInputAction:
+            index < 3 ? TextInputAction.next : TextInputAction.done,
+
             onChanged: (value) {
               if (value.length == 1 && index < 3) {
                 FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
@@ -75,14 +63,7 @@ class _CustomPinState extends State<CustomPin> {
               }
             },
 
-            style: TextStyle(fontSize: w * .04, fontWeight: FontWeight.w500),
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
             decoration: InputDecoration(
-              // fillColor: _focusNodes[index].hasFocus
-              //     ? ColorsList.otpBoxEnableColor
-              //     : ColorsList.otpBoxColor,
-              // filled: true,
               contentPadding: EdgeInsets.symmetric(vertical: w * .02),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(w * .03),
@@ -96,7 +77,7 @@ class _CustomPinState extends State<CustomPin> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: _controllers[index].text.isNotEmpty
+                  color: widget.controllers[index].text.isNotEmpty
                       ? ColorsList.mainButtonColor
                       : Colors.grey,
                   width: 1,
@@ -104,7 +85,15 @@ class _CustomPinState extends State<CustomPin> {
                 borderRadius: BorderRadius.circular(w * .03),
               ),
             ),
-            cursorHeight: w * .05,
+
+            style: TextStyle(
+              fontSize: w * .04,
+              fontWeight: FontWeight.w500,
+            ),
+
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+
             inputFormatters: [
               LengthLimitingTextInputFormatter(1),
               FilteringTextInputFormatter.digitsOnly,
@@ -115,3 +104,5 @@ class _CustomPinState extends State<CustomPin> {
     );
   }
 }
+
+

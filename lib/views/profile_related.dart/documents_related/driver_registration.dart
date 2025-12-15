@@ -1329,7 +1329,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                           .toString(),
                                       rcImage: uploadController.getImage(
                                         "photo",
-                                      ),
+                                      ), vehicleId: '',
                                     );
                                     if (createvechicleController
                                             .updateSuccess

@@ -277,12 +277,13 @@ class SocketController extends GetxController {
 
   void connectSocket() {
     socket = IO.io(
-      "https://corezap.smarttechbros.com",
+      "http://api.corezap.framekarts.com:1505",
       IO.OptionBuilder()
           .setTransports(['websocket', 'polling'])
           .setAuth({"token": SessionManager.getToken()})
-          // .enableAutoConnect()
           .enableReconnection()
+          .setReconnectionAttempts(9999)
+          .setReconnectionDelay(3000)
           .build(),
     );
 
@@ -331,7 +332,8 @@ class SocketController extends GetxController {
     print("update location");
     currentLatitude.value = lat;
     currentLongitude.value = lng;
-
+print("enevvvvvvvlong${currentLongitude.value }");
+    print("evvvvvvvvlat${currentLatitude.value }");
     if (isDriverOnline.value && socket.connected) {
       _sendLocationToServer(lat, lng);
     }
@@ -358,10 +360,10 @@ class SocketController extends GetxController {
 
     Map<String, dynamic> data = {
       "latitude": currentLatitude.value == 0.0
-          ? 17.385044
+          ? 0.0
           : currentLatitude.value,
       "longitude": currentLongitude.value == 0.0
-          ? 78.486671
+          ? 0.0
           : currentLongitude.value,
       "vehicleType": dashBoardApis.vehicleId.value,
     };
@@ -390,7 +392,7 @@ class SocketController extends GetxController {
   void _startSendingLocation() {
     _locationTimer?.cancel();
 
-    _locationTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _locationTimer = Timer.periodic(Duration(seconds: 3), (timer) {
       if (isDriverOnline.value && socket.connected) {
         _sendLocationToServer(currentLatitude.value, currentLongitude.value);
       }
@@ -403,7 +405,7 @@ class SocketController extends GetxController {
 
   void _sendLocationToServer(double lat, double lng) {
     print("yyyyyyyyyyy");
-    socket.emit('driver:location', {"latitude": lat, "longitude": lng});
+    socket.emit('driver:location:update', {"latitude": lat, "longitude": lng});
 
     print("📍 LOCATION SENT → $lat , $lng");
   }

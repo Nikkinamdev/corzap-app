@@ -14,6 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../apis/driver_detail_apis.dart';
+import '../../apis/ride_apis.dart';
+
 class EnterCodeScreen extends StatefulWidget {
   const EnterCodeScreen({super.key});
 
@@ -23,7 +26,7 @@ class EnterCodeScreen extends StatefulWidget {
 
 class _EnterCodeScreenState extends State<EnterCodeScreen> {
   StepperController stepperController = Get.find<StepperController>();
-
+  RideApisController RideOtp = Get.put(RideApisController());
   String imagePath = "";
   int activeStep = 0;
   late GoogleMapController mapController;
@@ -31,6 +34,14 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
     target: LatLng(23.2599, 77.4126), // Example: Bhopal
     zoom: 14,
   );
+  DashBoardApis vehicleid = Get.find<DashBoardApis>();
+
+  // In your parent widget
+  final List<TextEditingController> otpControllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
+
   @override
   Widget build(BuildContext context) {
     double w = MediaQuery.of(context).size.width;
@@ -99,10 +110,12 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
                 children: [
                   GoogleMap(
                     initialCameraPosition: _initialPosition,
-                    mapType:
-                        MapType.normal, // normal, satellite, hybrid, terrain
-                    myLocationEnabled: true, // user location show
-                    myLocationButtonEnabled: true, // location button
+                    mapType: MapType.normal,
+                    // normal, satellite, hybrid, terrain
+                    myLocationEnabled: true,
+                    // user location show
+                    myLocationButtonEnabled: true,
+                    // location button
                     zoomControlsEnabled: false,
                     onMapCreated: (GoogleMapController controller) {
                       mapController = controller;
@@ -261,7 +274,7 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
                       horizontal: w * .24,
                       vertical: w * .1,
                     ),
-                    child: CustomPin(),
+                    child: CustomPin(controllers: otpControllers),
                   ),
                   SizedBox(height: w * .1),
                   Padding(
@@ -269,8 +282,36 @@ class _EnterCodeScreenState extends State<EnterCodeScreen> {
                     child: AppButtons.solid(
                       context: context,
                       text: "Verify",
-                      onClicked: () {
-                        stepperController.nextStep();
+                      onClicked: () async {
+                        String otp = otpControllers.map((c) => c.text).join();
+                        if (otp.isEmpty || otp.length < otpControllers.length) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: CustomText(text: "Ride OTP is required"),
+                            ),
+                          );
+                          return; // ❌ stop execution
+                        }
+                        await RideOtp.RideOtp(
+                          orderId: vehicleid.vehicleId.value,
+
+                          rideOtp: otp,
+                        );
+
+                        if (RideOtp.RideAcceptStatus.value == true) {
+                          stepperController.nextStep();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppColors.primaryRed,
+                              content: CustomText(
+                                text: RideOtp.RideAcceptMessage.value,
+                                textColor: Colors.white,
+                              ),
+                            ),
+                          );
+                        }
+
                         CustomNavigator.pop(context);
                       },
                       isFullWidth: true,

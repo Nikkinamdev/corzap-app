@@ -1,3 +1,5 @@
+import 'package:corezap_driver/apis/driver_detail_apis.dart';
+import 'package:corezap_driver/apis/ride_apis.dart';
 import 'package:corezap_driver/session/session_manager.dart';
 import 'package:corezap_driver/utilities/app_buttons.dart';
 import 'package:corezap_driver/utilities/bottom_Sheets/custom_bottom_sheets.dart';
@@ -11,9 +13,17 @@ import 'package:corezap_driver/views/auth/login_screen.dart';
 import 'package:corezap_driver/views/bottomNavigation/bottomNavMain_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+
+import '../../controller/ride_data_controller.dart';
 
 class PopUps {
-  void cancelRidePopup(BuildContext context) {
+  RideApisController cancelRide = RideApisController();
+  DashBoardApis vehicleId = Get.find<DashBoardApis>();
+  RideDataController orderId = Get.find<RideDataController>();
+
+  void cancelRidePopup(BuildContext context, int index, String reason) {
     double w = MediaQuery.of(context).size.width;
     showDialog(
       context: context,
@@ -88,11 +98,30 @@ class PopUps {
                         text: "Yes, Cancel",
 
                         onClicked: () {
-                          CustomNavigator.push(
-                            context,
-                            BottomnavmainScreen(),
-                            transition: TransitionType.slideLeft,
+                          cancelRide.declineRide(
+                            orderId: orderId.rideId.value,
+                            driverId: SessionManager.getDriverId().toString(),
+                            vehicleId: vehicleId.vehicleId.value,
+                            status: "Declined",
                           );
+                          if (cancelRide.RideDeclinetStatus.value == true) {
+                            CustomNavigator.push(
+                              context,
+                              BottomnavmainScreen(),
+                              transition: TransitionType.slideLeft,
+                            );
+                          } else {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: AppColors.primaryRed,
+                                content: CustomText(
+                                  text: cancelRide.RideDeclinetMessage.value,
+                                  textColor: AppColors.white,
+                                ),
+                              ),
+                            );
+                          }
                         },
                         width: w * .42,
                         radius: 30,
@@ -112,6 +141,7 @@ class PopUps {
       },
     );
   }
+
   void logout(BuildContext context) {
     double w = MediaQuery.of(context).size.width;
     showDialog(
@@ -165,22 +195,22 @@ class PopUps {
                   //  vertical: w * .05,
                 ),
                 child:
-                AppButtons.solid(
-                  context: context,
-                  width: w,
-                  //  isLoading: authController.loading.value,
-                  text: "Logout",
-                  onClicked: () {
-                    SessionManager.clearSession();
-                    CustomNavigator.removeUntil(context, LoginScreen());
-                  },
-                )
-                    .animate()
-                    .fade(duration: 1000.ms, curve: Curves.easeInOut)
-                    .scale(
-                  begin: const Offset(0.95, 0.95),
-                  end: const Offset(1, 1),
-                ),
+                    AppButtons.solid(
+                          context: context,
+                          width: w,
+                          //  isLoading: authController.loading.value,
+                          text: "Logout",
+                          onClicked: () {
+                            SessionManager.clearSession();
+                            CustomNavigator.removeUntil(context, LoginScreen());
+                          },
+                        )
+                        .animate()
+                        .fade(duration: 1000.ms, curve: Curves.easeInOut)
+                        .scale(
+                          begin: const Offset(0.95, 0.95),
+                          end: const Offset(1, 1),
+                        ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -188,23 +218,23 @@ class PopUps {
                   // vertical: w * .02,
                 ),
                 child:
-                AppButtons.solid(
-                  context: context,
-                  width: w,
-                  //  isLoading: authController.loading.value,
-                  text: "Cancel",
-                  onClicked: () {
-                    CustomNavigator.pop(context);
-                  },
-                  backgroundColor: AppColors.white,
-                  textColor: AppColors.black,
-                )
-                    .animate()
-                    .fade(duration: 1000.ms, curve: Curves.easeInOut)
-                    .scale(
-                  begin: const Offset(0.95, 0.95),
-                  end: const Offset(1, 1),
-                ),
+                    AppButtons.solid(
+                          context: context,
+                          width: w,
+                          //  isLoading: authController.loading.value,
+                          text: "Cancel",
+                          onClicked: () {
+                            CustomNavigator.pop(context);
+                          },
+                          backgroundColor: AppColors.white,
+                          textColor: AppColors.black,
+                        )
+                        .animate()
+                        .fade(duration: 1000.ms, curve: Curves.easeInOut)
+                        .scale(
+                          begin: const Offset(0.95, 0.95),
+                          end: const Offset(1, 1),
+                        ),
               ),
               SizedBox(height: w * .05),
             ],

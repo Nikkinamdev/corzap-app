@@ -1,17 +1,28 @@
 import 'package:get/get.dart';
 
 class RideDataController extends GetxController {
-  // Raw ride data map
+  // Raw ride data
   RxMap<String, dynamic> rideData = <String, dynamic>{}.obs;
 
-  // Method to store ride data from socket
+  // Separate rideId (easy access)
+  RxString rideId = ''.obs;
+
+  // Store ride data from socket
   void setRideData(Map<String, dynamic> data) {
-    rideData.value = data;
-    print("rrrrrrrrrrideeeeeeeeeee$rideData");
+    rideData.assignAll(data);
+
+    if (data.containsKey('rideId')) {
+      rideId.value = data['rideId'].toString();
+      print("✅ Ride ID saved in memory → ${rideId.value}");
+    }
+
+    print("🚗 FULL RIDE DATA → $rideData");
   }
 
-  // Clear when needed
+  // Clear ride
   void clearRideData() {
     rideData.clear();
+    rideId.value = '';
+    print("🧹 Ride data cleared");
   }
 }

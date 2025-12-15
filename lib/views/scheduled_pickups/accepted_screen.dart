@@ -20,7 +20,11 @@ import 'package:get/instance_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
+import '../../apis/driver_detail_apis.dart';
+import '../../apis/ride_apis.dart';
 import '../../controller/location_controller.dart';
+import '../../controller/map_controller.dart';
+import '../../controller/ride_data_controller.dart';
 
 class ArrivingClient extends StatefulWidget {
   const ArrivingClient({super.key});
@@ -46,6 +50,10 @@ class _ArrivingClientState extends State<ArrivingClient> {
   // Use Set to avoid duplicates and improve performance
   final Set<Polyline> _polylines = {};
   final Set<Marker> _markers = {};
+  RideApisController ArriveClient = Get.put(RideApisController());
+  DashBoardApis vehicleid = Get.find<DashBoardApis>();
+  final rideCtrl = Get.find<RideDataController>();
+  Polyline? routePolyline;
 
   @override
   void initState() {
@@ -119,55 +127,43 @@ class _ArrivingClientState extends State<ArrivingClient> {
   }
 
   // DRAW POLYLINE USING DIRECTIONS API
-  Future<void> drawPolyline(LatLng origin, LatLng destination) async {
-    const String apiKey = "AIzaSyCtM1jo8qzhEn2XZ8SVCoboULcondCjZio";
-
-    final String url =
-        "https://maps.googleapis.com/maps/api/directions/json?"
-        "origin=${origin.latitude},${origin.longitude}"
-        "&destination=${destination.latitude},${destination.longitude}"
-        "&key=$apiKey";
-
+  Future<void> drawPolyline(LatLng pickup, LatLng drop) async {
     try {
+      final String apiKey = "AIzaSyCtM1jo8qzhEn2XZ8SVCoboULcondCjZio";
+
+      final String url =
+          "https://maps.googleapis.com/maps/api/directions/json?origin=${pickup.latitude},${pickup.longitude}&destination=${drop.latitude},${drop.longitude}&key=$apiKey";
+
       final response = await http.get(Uri.parse(url));
-      if (response.statusCode != 200) {
-        print("Directions API error: ${response.statusCode}");
-        return;
-      }
+      if (response.statusCode != 200) return;
 
-      final data = json.decode(response.body);
+      final data = jsonDecode(response.body);
+      if (data["routes"] == null || data["routes"].isEmpty) return;
 
-      if (data['status'] != 'OK' || data['routes'].isEmpty) {
-        print("No route found: ${data['status']}");
-        return;
-      }
+      final String encoded = data["routes"][0]["overview_polyline"]["points"];
+      if (encoded == null || encoded.isEmpty) return;
 
-      final String encodedPolyline =
-          data['routes'][0]['overview_polyline']['points'];
-      final List<LatLng> polylinePoints = decodeEncodedPolyline(
-        encodedPolyline,
-      );
+      // decode without package
+      List<LatLng> coords = decodeEncodedPolyline(encoded);
 
-      _polylines.clear(); // Clear old routes
-      _polylines.add(
-        Polyline(
-          polylineId: const PolylineId("driver_route"),
-          color: const Color(0xFF0066FF),
-          // Beautiful blue
-          width: 4,
+      setState(() {
+        routePolyline = Polyline(
+          polylineId: const PolylineId("route"),
+          points: coords,
+          width: 6,
+          // ← 5 se 6 karo
+          color: Colors.blueAccent,
+          // ← zyada bright color
+          patterns: [],
+          // solid line
           jointType: JointType.round,
-          // Smooth corners
           startCap: Cap.roundCap,
-          // Rounded start
           endCap: Cap.roundCap,
-          // Rounded end
-          points: polylinePoints,
-        ),
-      );
-
-      setState(() {}); // Trigger rebuild
+          zIndex: 5,
+        );
+      });
     } catch (e) {
-      print("Polyline drawing error: $e");
+      print("drawPolyline error: $e");
     }
   }
 
@@ -201,6 +197,8 @@ class _ArrivingClientState extends State<ArrivingClient> {
     }
     return points;
   }
+
+  final PolylineController polyCtrl = Get.put(PolylineController());
 
   Widget build(BuildContext context) {
     double w = MediaQuery.of(context).size.width;
@@ -266,19 +264,19 @@ class _ArrivingClientState extends State<ArrivingClient> {
             height: w * .5,
             child: Stack(
               children: [
-                GoogleMap(
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(23.259933, 77.412613),
-                    zoom: 14,
+                Obx(
+                  () => GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: polyCtrl.currentLatLng.value,
+                      zoom: 14,
+                    ),
+                    myLocationEnabled: true,
+                    markers: polyCtrl.markers,
+                    polylines: polyCtrl.polylines,
+                    onMapCreated: (controller) {
+                      polyCtrl.mapController = controller;
+                    },
                   ),
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  zoomControlsEnabled: false,
-                  polylines: _polylines,
-                  markers: _markers,
-                  onMapCreated: (GoogleMapController controller) {
-                    mapController = controller;
-                  },
                 ),
 
                 Obx(() {
@@ -571,22 +569,75 @@ class _ArrivingClientState extends State<ArrivingClient> {
                             : stepperController.activeStep.value == 3
                             ? "Completed trip"
                             : "Completed trip",
-                        onClicked: () {
+                        onClicked: () async {
                           if (stepperController.activeStep.value == 1) {
-                            CustomNavigator.push(
-                              context,
-                              EnterCodeScreen(),
-                              transition: TransitionType.fade,
+                            await ArriveClient.AcceptRide(
+                              vehicleId: vehicleid.vehicleId.value,
+                              orderStatus: "Arriving",
+                              orderId: rideCtrl.rideId.value,
                             );
+                            if (ArriveClient.RideAcceptStatus.value == true) {
+                              CustomNavigator.push(
+                                context,
+                                EnterCodeScreen(),
+                                transition: TransitionType.fade,
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.primaryRed,
+                                  content: CustomText(
+                                    text: ArriveClient.RideAcceptMessage.value,
+                                    textColor: AppColors.white,
+                                  ),
+                                ),
+                              );
+                            }
                           } else if (stepperController.activeStep.value == 2) {
-                            stepperController.nextStep();
-                          } else if (stepperController.activeStep.value == 3) {
-                            stepperController.nextStep();
-                            CustomNavigator.push(
-                              context,
-                              ReceivePaymentModes(),
-                              transition: TransitionType.fade,
+                            print("starttttttttttt");
+                            ArriveClient.AcceptRide(
+                              vehicleId: vehicleid.vehicleId.value,
+                              orderStatus: "Progress",
+                              orderId: rideCtrl.rideId.value,
                             );
+                            if (ArriveClient.RideAcceptStatus.value == true) {
+                              stepperController.nextStep();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: CustomText(
+                                    text: ArriveClient.RideAcceptMessage.value,
+                                    textColor: Colors.white,
+                                  ),
+                                ),
+                              );
+                            }
+                          } else if (stepperController.activeStep.value == 3) {
+                            print("sssssssss${stepperController}");
+                            ArriveClient.AcceptRide(
+                              orderId: rideCtrl.rideId.value,
+                              vehicleId: vehicleid.vehicleId.value,
+                              orderStatus: "Progress",
+                            );
+                            if (ArriveClient.RideAcceptStatus.value == true) {
+                              stepperController.nextStep();
+                              CustomNavigator.push(
+                                context,
+                                ReceivePaymentModes(),
+                                transition: TransitionType.fade,
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.primaryRed,
+                                  content: CustomText(
+                                    text: ArriveClient.RideAcceptMessage.value,
+                                    textColor: Colors.white,
+                                  ),
+                                ),
+                              );
+                            }
+                            //  stepperController.nextStep();
                           }
                         },
                         isFullWidth: true,

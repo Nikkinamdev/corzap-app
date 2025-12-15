@@ -70,6 +70,7 @@ class Auth extends GetxController {
   RxBool registerSuccess = false.obs;
   RxBool isLoggedIn = false.obs;
   RxBool checkRagister = false.obs;
+
   void changeIndex(int index) {
     currentIndex.value = index;
   }
@@ -289,13 +290,16 @@ class Auth extends GetxController {
 
       final response = await http.post(
         Uri.parse("${Urls.baseUrl}/driver/verifyOtp"),
+
         body: {
           "phone": phoneNumber.value,
           "otp": otp.value,
-          "fcmToken":
-              "jhgoernggoojrngojerngorengojrengojerngojrngnergjnrgregnregojerngre",
+          "fcmToken": SessionManager.getFcmToken().toString(),
           "deviceId": "sybccifrfiug931pj",
         },
+      );
+      print(
+        "fcmmmmmmmmmmmmm tokennnnnnnnn${SessionManager.getFcmToken().toString()}",
       );
 
       print("Response status: ${response.statusCode}");

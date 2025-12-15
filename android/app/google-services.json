@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "385536471524",
+    "project_id": "corezap-2c4a9",
+    "storage_bucket": "corezap-2c4a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385536471524:android:bea73acb259d5345c2d7f1",
+        "android_client_info": {
+          "package_name": "com.driver.corzapDriver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADg53rfzJ5zB2ODsguBmLrsn6TxowNmJ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
